@@ -18,10 +18,38 @@ from src.conf import constants
 
 
 class Base(DeclarativeBase):
+    """
+    Base class for declarative SQLAlchemy models.
+
+    The metadata attribute contains:
+    - Table collection
+    - Schema management
+    - Migration support
+
+    See SQLAlchemy's `DeclarativeBase.metadata` documentation for details.
+    """
+
     pass
 
 
 class Contact(Base):
+    """
+    SQLAlchemy model for storing contact information.
+
+    Attributes:
+        id: The unique identifier for the contact.
+        first_name: The first name of the contact.
+        last_name: The last name of the contact.
+        email: The email address of the contact.
+        phone_number: The phone number of the contact.
+        birthday: The birth date of the contact.
+        additional_info: Optional additional notes or information.
+        created_at: Timestamp when the contact was created.
+        updated_at: Timestamp when the contact was last updated.
+        user_id: The ID of the user who owns the contact.
+        user: Relationship to the user who owns this contact.
+    """
+
     __tablename__ = "contacts"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     first_name: Mapped[str] = mapped_column(
@@ -49,12 +77,35 @@ class Contact(Base):
 
 
 class UserRole(str, Enum):
+    """
+    Enumeration for user roles.
+
+    Values:
+        USER: Regular user.
+        MODERATOR: User with moderation privileges.
+        ADMIN: User with administrative privileges.
+    """
+
     USER = constants.ROLE_USER
     MODERATOR = constants.ROLE_MODERATOR
     ADMIN = constants.ROLE_ADMIN
 
 
 class User(Base):
+    """
+    SQLAlchemy model for storing user account information.
+
+    Attributes:
+        id: The unique identifier for the user.
+        username: The user's unique username.
+        email: The user's unique email address.
+        hash_password: The hashed password for authentication.
+        role: The user's role (user, moderator, or admin).
+        avatar: Optional URL to the user's avatar image.
+        confirmed: Indicates whether the user's email is confirmed.
+        refresh_tokens: Relationship to refresh tokens for the user.
+    """
+
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(nullable=False, unique=True)
@@ -71,6 +122,21 @@ class User(Base):
 
 
 class RefreshToken(Base):
+    """
+    SQLAlchemy model for storing refresh token metadata.
+
+    Attributes:
+        id: The unique identifier for the refresh token.
+        user_id: The ID of the associated user.
+        token_hash: The hashed value of the refresh token.
+        created_at: Timestamp of when the token was created.
+        expired_at: Timestamp of token expiration.
+        revoked_at: Optional timestamp if the token was revoked.
+        ip_address: Optional IP address where the token was issued.
+        user_agent: Optional user agent string from the client.
+        user: Relationship to the user who owns the token.
+    """
+
     __tablename__ = "refresh_tokens"
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)

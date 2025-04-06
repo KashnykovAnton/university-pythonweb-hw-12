@@ -8,6 +8,13 @@ from src.conf import messages
 
 
 class ContactSchema(BaseModel):
+    """
+    Pydantic schema for creating a new contact.
+
+    This schema defines the structure and validation rules for contact creation.
+    All fields are required unless otherwise specified.
+    """
+
     first_name: str = Field(
         min_length=constants.NAME_MIN_LENGTH,
         max_length=constants.NAME_MAX_LENGTH,
@@ -37,6 +44,13 @@ class ContactSchema(BaseModel):
 
 
 class ContactUpdateSchema(BaseModel):
+    """
+    Pydantic schema for updating an existing contact.
+
+    This schema defines the structure and validation rules for contact updates.
+    All fields are optional - only provided fields will be updated.
+    """
+
     first_name: Optional[str] = Field(
         default=None,
         min_length=constants.NAME_MIN_LENGTH,
@@ -72,6 +86,13 @@ class ContactUpdateSchema(BaseModel):
 
 
 class ContactResponse(BaseModel):
+    """
+    Pydantic schema for contact response data.
+
+    This schema defines how contact data is returned from the API,
+    including all fields and timestamps.
+    """
+
     id: int
     first_name: str
     last_name: str
