@@ -134,7 +134,7 @@ email_confirm_request = {
     "ua": "Перевірте свою електронну пошту для підтвердження",
 }
 
-invalid_token = {
+invalid_email_token = {
     "en": "Wrong token for email confirmation",
     "ua": "Неправильний токен для підтвердження електронної пошти",
 }

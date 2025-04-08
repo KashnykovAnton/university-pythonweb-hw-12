@@ -26,7 +26,6 @@ from src.conf import messages
 from src.services.email import send_email
 from src.schemas.email import RequestEmail
 from src.services.user import UserService
-from src.core.depend_service import get_user_service
 from src.core.email_token import get_email_from_token
 from src.services.upload_file_service import UploadFileService
 from src.conf.config import settings

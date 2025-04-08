@@ -29,6 +29,7 @@ class Settings(BaseSettings):
 
     # Redis Configuration
     REDIS_URL: str = os.getenv("REDIS_URL")
+    REDIS_TTL: int = os.getenv("USER_CACHE_TTL")
 
     # Email Configuration
     MAIL_USERNAME: EmailStr = os.getenv("MAIL_USERNAME")

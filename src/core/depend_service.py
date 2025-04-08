@@ -6,9 +6,12 @@ from src.entity.models import User, UserRole
 from src.services.auth import AuthService, oauth2_scheme
 from src.services.user import UserService
 from src.conf import messages
+from src.services.cache import CacheService, get_cache_service
 
 
-def get_auth_service(db: AsyncSession = Depends(get_db)) -> AuthService:
+def get_auth_service(
+    db: AsyncSession = Depends(get_db), cache: CacheService = Depends(get_cache_service)
+) -> AuthService:
     """
     Dependency function that provides an AuthService instance.
 
@@ -18,10 +21,10 @@ def get_auth_service(db: AsyncSession = Depends(get_db)) -> AuthService:
     Returns:
         AuthService: An instance of the authentication service.
     """
-    return AuthService(db)
+    return AuthService(db, cache)
 
 
-def get_user_service(db: AsyncSession = Depends(get_db)) -> UserService:
+def get_user_service(db: AsyncSession = Depends(get_db), cache: CacheService = Depends(get_cache_service)) -> UserService:
     """
     Dependency function that provides a UserService instance.
 
@@ -31,7 +34,7 @@ def get_user_service(db: AsyncSession = Depends(get_db)) -> UserService:
     Returns:
         UserService: An instance of the user service.
     """
-    return UserService(db)
+    return UserService(db, cache)
 
 
 async def get_current_user(

@@ -56,5 +56,5 @@ def get_email_from_token(token: str) -> str:
     except jwt.PyJWTError as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=messages.invalid_token.get("ua"),
+            detail=messages.invalid_email_token.get("ua"),
         )

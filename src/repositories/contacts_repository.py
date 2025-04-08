@@ -72,7 +72,7 @@ class ContactRepository:
         Returns:
             The created Contact instance.
         """
-        contact = Contact(**body.model_dump(), user=user)
+        contact = Contact(**body.model_dump(), user_id=user.id)
         self.db.add(contact)
         await self.db.commit()
         await self.db.refresh(contact)

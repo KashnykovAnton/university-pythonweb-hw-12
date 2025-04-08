@@ -17,12 +17,15 @@ from src.services.auth import AuthService, oauth2_scheme
 from src.schemas.token import TokenResponse, RefreshTokenRequest
 from src.schemas.user import UserResponse, UserCreate
 from src.services.email import send_email
+from src.services.cache import CacheService, get_cache_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 logger = logging.getLogger("uvicorn.error")
 
 
-def get_auth_service(db: AsyncSession = Depends(get_db)) -> AuthService:
+def get_auth_service(
+    db: AsyncSession = Depends(get_db), cache: CacheService = Depends(get_cache_service)
+) -> AuthService:
     """
     Dependency function to get an instance of AuthService.
 
@@ -32,7 +35,7 @@ def get_auth_service(db: AsyncSession = Depends(get_db)) -> AuthService:
     Returns:
         AuthService: An instance of the authentication service.
     """
-    return AuthService(db)
+    return AuthService(db, cache)
 
 
 @router.post(
@@ -133,6 +136,7 @@ async def refresh(
     user = await auth_service.validate_refresh_token(refresh_token.refresh_token)
 
     new_access_token = auth_service.create_access_token(user.username)
+    # TODO: Add logic to revoke old access_token and use the new one after the refresh
     new_refresh_token = await auth_service.create_refresh_token(
         user.id,
         ip_address=request.client.host if request else None,
@@ -165,11 +169,17 @@ async def logout(
     Returns:
         None: HTTP 204 No Content on success.
 
+    Raises:
+        HTTPException: 401 if refresh token is invalid or already revoked.
+
     Notes:
-        - Adds access token to blacklist until expiration.
-        - Marks refresh token as revoked in database.
-        - Effectively terminates current session.
+        - Validates that the refresh token is the current active one
+        - Adds access token to blacklist until expiration
+        - Marks refresh token as revoked in database
+        - Effectively terminates current session
     """
+    await auth_service.validate_refresh_token(refresh_token.refresh_token)
+
     await auth_service.revoke_access_token(token)
     await auth_service.revoke_refresh_token(refresh_token.refresh_token)
     return None

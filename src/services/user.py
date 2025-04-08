@@ -1,9 +1,14 @@
+import redis.asyncio as redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from fastapi import Depends
 from src.entity.models import User
 from src.repositories.user_repository import UserRepository
 from src.schemas.user import UserCreate
 from src.services.auth import AuthService
+from src.conf.config import settings
+from src.schemas.user import UserResponse
+from src.services.cache import CacheService
 
 
 class UserService:
@@ -15,7 +20,7 @@ class UserService:
     and AuthService for authentication-related functionality.
     """
 
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession, cache_service: CacheService):
         """
         Initialize the UserService with database session and dependencies.
 
@@ -24,7 +29,8 @@ class UserService:
         """
         self.db = db
         self.user_repository = UserRepository(self.db)
-        self.auth_service = AuthService(db)
+        self.auth_service = AuthService(db, cache_service)
+        self.cache_service = cache_service
 
     async def create_user(self, user_data: UserCreate) -> User:
         """
@@ -102,4 +108,9 @@ class UserService:
         Note:
             The URL should typically point to an image stored in cloud storage.
         """
-        return await self.user_repository.update_avatar_url(email, url)
+        user = await self.user_repository.update_avatar_url(email, url)
+
+        await self.cache_service.delete_user_cache(user.username)
+        await self.cache_service.cache_user(user)
+
+        return user
