@@ -1,14 +1,15 @@
 import redis.asyncio as redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi import Depends
-from src.entity.models import User
+from fastapi import Depends, HTTPException, status
+from src.entity.models import User, UserRole
 from src.repositories.user_repository import UserRepository
 from src.schemas.user import UserCreate
 from src.services.auth import AuthService
 from src.conf.config import settings
 from src.schemas.user import UserResponse
 from src.services.cache import CacheService
+from src.conf import messages
 
 
 class UserService:
@@ -105,9 +106,27 @@ class UserService:
         Returns:
             The updated User object.
 
+        Raises:
+            HTTPException: 403 if user doesn't have admin role.
+            HTTPException: 404 if user not found.
+
         Note:
-            The URL should typically point to an image stored in cloud storage.
+            Only users with ADMIN role can update their avatar.
         """
+        user = await self.user_repository.get_user_by_email(email)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=messages.contact_not_found.get("ua")
+            )
+            
+        if user.role != UserRole.ADMIN:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=messages.role_access_info.get("ua")
+            )
+            
         user = await self.user_repository.update_avatar_url(email, url)
 
         await self.cache_service.delete_user_cache(user.username)

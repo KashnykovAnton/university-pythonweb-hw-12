@@ -6,7 +6,7 @@ from src.schemas.user import UserResponse
 
 
 class CacheService:
-     """Service for managing Redis cache operations.
+    """Service for managing Redis cache operations.
 
     Handles all Redis interactions including:
     - Token blacklisting
@@ -17,11 +17,12 @@ class CacheService:
         redis_url: Redis connection URL from settings
         cache_ttl: Default time-to-live for cached items in seconds
     """
+
     def __init__(self):
         """Initialize Redis client with application settings."""
         self.redis = redis.from_url(settings.REDIS_URL)
         self.cache_ttl = settings.REDIS_TTL
-        
+
     async def is_token_revoked(self, token: str) -> bool:
         """Check if a token has been revoked.
 
@@ -99,7 +100,7 @@ cache_service = CacheService()
 
 async def get_cache_service() -> CacheService:
     """Dependency function to get CacheService instance.
-    
+
     Returns:
         CacheService: The shared cache service instance
     """

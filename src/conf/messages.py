@@ -138,3 +138,4 @@ invalid_email_token = {
     "en": "Wrong token for email confirmation",
     "ua": "Неправильний токен для підтвердження електронної пошти",
 }
+
