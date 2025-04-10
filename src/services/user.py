@@ -10,6 +10,7 @@ from src.conf.config import settings
 from src.schemas.user import UserResponse
 from src.services.cache import CacheService
 from src.conf import messages
+from src.core.email_token import get_email_from_token
 
 
 class UserService:
@@ -114,22 +115,74 @@ class UserService:
             Only users with ADMIN role can update their avatar.
         """
         user = await self.user_repository.get_user_by_email(email)
-        
+
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=messages.contact_not_found.get("ua")
+                detail=messages.contact_not_found.get("ua"),
             )
-            
+
         if user.role != UserRole.ADMIN:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=messages.role_access_info.get("ua")
+                detail=messages.role_access_info.get("ua"),
             )
-            
+
         user = await self.user_repository.update_avatar_url(email, url)
 
         await self.cache_service.delete_user_cache(user.username)
         await self.cache_service.cache_user(user)
 
         return user
+
+    async def request_password_reset(self, email: str) -> User:
+        """
+        Initiate password reset process by sending reset email.
+
+        Args:
+            email: The email address of the user requesting password reset.
+
+        Raises:
+            HTTPException: If user with given email doesn't exist.
+        """
+        user = await self.get_user_by_email(email)
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=messages.contact_not_found.get("ua"),
+            )
+        return user
+
+    async def reset_password(self, token: str, new_password: str) -> None:
+        """
+        Reset user's password using the provided token.
+
+        Args:
+            token: The password reset token.
+            new_password: The new password to set.
+
+        Raises:
+            HTTPException: If token is invalid or expired.
+        """
+        try:
+            email = get_email_from_token(token)
+            user = await self.user_repository.get_user_by_email(email)
+
+            if not user:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=messages.contact_not_found.get("ua"),
+                )
+
+            hashed_password = self.auth_service._hash_password(new_password)
+            await self.user_repository.update_password(email, hashed_password)
+
+            await self.cache_service.delete_user_cache(user.username)
+            await self.cache_service.cache_user(user)
+
+        except HTTPException:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=messages.invalid_email_token.get("ua"),
+            )

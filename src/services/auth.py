@@ -324,7 +324,9 @@ class AuthService:
         """
         payload = self.decode_and_validate_access_token(token)
         exp = payload.get("exp")
+        username = payload.get("sub")
         if exp:
             expire_at = datetime.fromtimestamp(exp, timezone.utc)
             await self.cache.revoke_token(token, expire_at)
+            await self.cache.delete_user_cache(username)
         return None

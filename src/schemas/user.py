@@ -50,3 +50,16 @@ class UserResponse(UserBase):
     role: UserRole
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordConfirm(BaseModel):
+    token: str
+    new_password: str = Field(
+        min_length=constants.USER_PASSWORD_MIN_LENGTH,
+        max_length=constants.USER_PASSWORD_MAX_LENGTH,
+        description=messages.password_schema.get("ua"),
+    )

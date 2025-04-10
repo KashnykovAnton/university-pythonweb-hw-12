@@ -22,7 +22,7 @@ conf = ConnectionConfig(
 )
 
 
-async def send_email(email: EmailStr, username: str, host: str):
+async def send_email(email: EmailStr, username: str, host: str, type: str) -> None:
     """
     Send an email verification message to the specified recipient.
 
@@ -45,7 +45,11 @@ async def send_email(email: EmailStr, username: str, host: str):
     try:
         token_verification = create_email_token({"sub": email})
         message = MessageSchema(
-            subject="Confirm your email",
+            subject=(
+                "Confirm your email"
+                if type == "registration"
+                else "Password Reset Request"
+            ),
             recipients=[email],
             template_body={
                 "host": host,
@@ -56,6 +60,11 @@ async def send_email(email: EmailStr, username: str, host: str):
         )
 
         fm = FastMail(conf)
-        await fm.send_message(message, template_name="verify_email.html")
+        await fm.send_message(
+            message,
+            template_name=(
+                "verify_email.html" if type == "registration" else "reset_password.html"
+            ),
+        )
     except ConnectionErrors as err:
         print(err)

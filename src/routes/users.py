@@ -26,9 +26,10 @@ from src.conf import messages
 from src.services.email import send_email
 from src.schemas.email import RequestEmail
 from src.services.user import UserService
-from src.core.email_token import get_email_from_token
+from src.core.email_token import create_email_token, get_email_from_token
 from src.services.upload_file_service import UploadFileService
 from src.conf.config import settings
+from src.schemas.password import ResetPasswordRequest, ResetPasswordConfirm
 
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -204,3 +205,57 @@ def read_admin(current_user: User = Depends(get_current_admin_user)) -> dict:
         .get("ua")
         .format(username=current_user.username)
     }
+
+
+@router.post("/reset_password_request")
+async def reset_password_request(
+    body: ResetPasswordRequest,
+    background_tasks: BackgroundTasks,
+    request: Request,
+    user_service: UserService = Depends(get_user_service),
+) -> dict:
+    """
+    Request password reset email.
+
+    Args:
+        body: ResetPasswordRequest schema containing user's email.
+        background_tasks: FastAPI background tasks for sending email.
+        request: The incoming request object.
+        user_service: Injected UserService instance.
+
+    Returns:
+        dict: Status message about password reset request.
+    """
+    user = await user_service.request_password_reset(str(body.email))
+
+    if user:
+        background_tasks.add_task(
+            send_email,
+            user.email,
+            user.username,
+            str(request.base_url),
+            "reset_password"
+        )
+
+    return {"message": "Password reset email has been sent"}
+
+
+@router.post("/reset_password/{token}")
+async def reset_password(
+    token: str,
+    body: ResetPasswordConfirm,
+    user_service: UserService = Depends(get_user_service),
+) -> dict:
+    """
+    Reset user's password using the provided token.
+
+    Args:
+        token: The password reset token.
+        body: ResetPasswordConfirm schema containing new password.
+        user_service: Injected UserService instance.
+
+    Returns:
+        dict: Status message about password reset.
+    """
+    await user_service.reset_password(token, body.new_password)
+    return {"message": "Password has been successfully reset"}
