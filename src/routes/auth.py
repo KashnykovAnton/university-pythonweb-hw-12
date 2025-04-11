@@ -66,11 +66,7 @@ async def register(
     """
     user = await auth_service.register_user(user_data)
     background_tasks.add_task(
-        send_email,
-        user.email,
-        user.username,
-        str(request.base_url),
-        "registration"
+        send_email, user.email, user.username, str(request.base_url), "registration"
     )
     return user
 
@@ -186,4 +182,5 @@ async def logout(
 
     await auth_service.revoke_access_token(token)
     await auth_service.revoke_refresh_token(refresh_token.refresh_token)
+
     return None

@@ -176,3 +176,9 @@ cython_debug/
 .DS_Store
 Thumbs.db
 .env.docker
+
+# Test database
+test.db
+
+# Environment variables
+.env.local
