@@ -1,10 +1,9 @@
 # University Python Web - Homework 12
 
-
 ## 📚 Lesson Resources
 
-- [Lesson 9 Video](https://www.youtube.com/watch?v=w-xbSutnP0Q\&t=1s)
-- [Lesson 10 Video](https://www.youtube.com/watch?v=r3xDHqpTOSo\&t=1s)
+- [Lesson 11 Video](https://www.youtube.com/watch?v=mdn_MKntxUU)
+- [Lesson 12 Video](https://www.youtube.com/watch?v=8aU_ILMz_Ak&t)
 
 ## 🚀 Quick Start
 
@@ -31,10 +30,6 @@ alembic upgrade head
 fastapi dev ./main.py
 ```
 
-## 📖 Pagination Reference
-
-[FastAPI Pagination Guide](https://uriyyo-fastapi-pagination.netlify.app/)
-
 ## 🛠 Redis Configuration
 
 ```bash
@@ -43,7 +38,7 @@ brew install redis
 brew services start redis
 ```
 
-*Note: Run ****`fastapi dev ./main.py`**** only after starting Redis!*
+_Note: Run \***\*`fastapi dev ./main.py`\*\*** only after starting Redis!_
 
 ## 🐳 Docker Compose Commands
 
@@ -59,32 +54,39 @@ docker-compose stop
 
 # Stop and delete containers
 docker-compose down -v
-
-# Sync databases
-docker-compose exec app python -m sync_databases save
 ```
 
-## ⚠️ Common Issues
+## 🧪 Testing
 
-### SMTP Certificate Error
-
-If you encounter:
-
-```
-Error connecting to smtp.meta.ua on port 465: [SSL: CERTIFICATE_VERIFY_FAILED]
-```
-
-Follow this solution:\
-[SSL Certificate Fix](https://stackoverflow.com/questions/52805115/certificate-verify-failed-unable-to-get-local-issuer-certificate)
-
-### PostgreSQL Version Check
-
+### Running Tests
 ```bash
-# Check pg_dump versions
-docker-compose exec app pg_dump --version
-docker-compose exec postgres pg_dump --version
+# Run repository tests
+pytest tests/repositories/test_contacts_repository.py -v
+
+# Run authentication tests
+pytest tests/test_e2e_auth.py -v
+
+# Generate coverage report (will be located in the htmlcov/index.html)
+pytest --cov-report html --cov=src tests/
 ```
 
 ### Known Issues
+- Issue with access token after refresh route:
+  - Old access token doesn't revoke
+  - New token works even after logout
+  - Logout revokes old access token but doesn't affect new token from refresh route
+  - Solution approach: Store access token in Redis after login, revoke it when refresh route is used, and store new token in Redis
+- Issue with reset password email:
+  - Basic template created but mail host blocks the logic
+  - Works correctly in Postman
+  - For proper functionality: Should link to front-end page with password reset form
 
-- Issue with password hard-coding in `docker-compose.yml` (not resolved)
+## 📖 Documentation
+
+### Sphinx Documentation
+To create documentation with Sphinx:
+1. Navigate to the docs folder
+2. Run: `make html`
+3. Custom styles in `_static/custom.css`
+4. CSS connection in `docs/conf.py`: `html_css_files = ["custom.css"]`
+5. To apply CSS changes: Run `make html` after each modification
