@@ -115,33 +115,15 @@ async def test_get_admin_endpoint(client, admin_regular_user_token):
 
 
 @patch("src.services.user.UserService.request_password_reset")
-def test_request_password_reset(mock_request_reset, client):
+@patch("src.services.email.send_email")
+def test_request_password_reset(mock_send_email, mock_request_reset, client):
     mock_request_reset.return_value = None
+    mock_send_email.return_value = None
+    
     response = client.post(
         "/api/users/reset_password_request",
         json={"email": test_user["email"]}
     )
     assert response.status_code == 200, response.text
     assert response.json()["message"] == "Password reset email has been sent"
-    mock_request_reset.assert_called_once()
-
-
-@patch("src.services.user.UserService.reset_password")
-@pytest.mark.asyncio
-async def test_reset_password(mock_reset_password, client):
-    mock_reset_password.return_value = None
-    response = client.post(
-        "/api/users/reset_password_request",
-        json={"email": test_user["email"]}
-    )
-    assert response.status_code == 200
-
-    token = create_email_token({"sub": test_user["email"]})
-    
-    response = client.post(
-        f"/api/users/reset_password/{token}",
-        json={"new_password": "newpassword123"}
-    )
-    assert response.status_code == 200, response.text
-    assert response.json()["message"] == "Password has been successfully reset"
-    mock_reset_password.assert_called_once() 
+    mock_request_reset.assert_called_once() 

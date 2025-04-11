@@ -47,7 +47,10 @@ def test_register_existing_email(client, monkeypatch):
     assert response.json()["detail"] == "Email вже існує"
 
 
-def test_login_unconfirmed_user(client):
+def test_login_unconfirmed_user(client, monkeypatch):
+    mock_send_email = Mock()
+    monkeypatch.setattr("src.services.email.send_email", mock_send_email)
+
     unconfirmed_data = {
         "username": "ghostuser",
         "email": "ghost@web.com",
