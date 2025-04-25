@@ -5,6 +5,11 @@
 - [Lesson 11 Video](https://www.youtube.com/watch?v=mdn_MKntxUU)
 - [Lesson 12 Video](https://www.youtube.com/watch?v=8aU_ILMz_Ak&t)
 
+## 📚 GitHub Resources
+
+- [Repo from text](https://github.com/goitacademy/FullStack-Web-Development-with-Python/tree/main/Chapter_12)
+- [Repo from lesson!!!](https://github.com/Krabaton/FullStack-Web-Development-with-Python-Master-of-Science-Software-Engineering-1/tree/main/mcs10_12)
+
 ## 🚀 Quick Start
 
 ### Local PostgreSQL Setup
